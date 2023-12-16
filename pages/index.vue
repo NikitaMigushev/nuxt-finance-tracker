@@ -23,7 +23,7 @@
       </div>
     </div>
     <div>
-      <TransactionModal v-model="isOpen" />
+      <TransactionModal v-model="isOpen" @saved="refreshTransactions()"/>
       <UButton icon="i-heroicons-plus-circle" color="blue" varian="solid" label="Add" @click="isOpen = true"/>
     </div>
   </section>
@@ -60,9 +60,6 @@ const expense = computed(
     () => transactions.value.filter(t => t.type === 'Expense')
 )
 
-console.log(income.value)
-console.log(expense.value)
-
 const incomeCount = computed(
     () => income.value.length
 )
@@ -86,6 +83,7 @@ const fetchTransactions = async () => {
       const {data, error} = await supabase
           .from('transactions')
           .select()
+          .order('created_at', {ascending: false})
 
       if (error) return []
 
@@ -112,7 +110,15 @@ const transactionsGroupedByDate = computed(() => {
     }
     grouped[date].push(transaction)
   }
-  return grouped
+
+  const sortedKeys = Object.keys(grouped).sort().reverse()
+  const sortedGrouped = {}
+
+  for (const key of sortedKeys) {
+    sortedGrouped[key] = grouped[key]
+  }
+
+  return sortedGrouped
 })
 
 </script>
